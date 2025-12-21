@@ -8,4 +8,3 @@
 - **DirectML** — MIT (<https://github.com/microsoft/DirectML/blob/master/LICENSE>)
 - **ONNX Runtime** — MIT (<https://github.com/microsoft/onnxruntime/blob/main/LICENSE>)
 - **OpenAI Whisper** — MIT (<https://github.com/openai/whisper/blob/main/LICENSE>)
-    
