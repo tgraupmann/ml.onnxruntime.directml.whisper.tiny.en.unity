@@ -1,4 +1,4 @@
-# Whisper Tiny EN (DirectML) for Unity
+# Whisper Tiny EN (OnnxRuntime/DirectML) for Unity
 
 ## License Summary
 - This package is distributed under the **Unity Asset Store Terms of Service and EULA** (see <https://unity.com/legal/as-terms> and the license overview at <https://support.unity.com/hc/en-us/articles/208601846-Asset-Store-licenses-Extension-Assets-Single-and-Multi-Entity-assets>).

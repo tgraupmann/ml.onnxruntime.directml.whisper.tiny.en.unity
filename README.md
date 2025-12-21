@@ -1,8 +1,12 @@
-# Whisper Tiny EN (DirectML) for Unity
+# Whisper Tiny EN (OnnxRuntime/DirectML) for Unity
 
 OpenAI Whisper is an automatic speech recognition (ASR) model trained on diverse multilingual audio; it transcribes speech to text and can auto-detect language. This package bundles the tiny English variant for lightweight, offline transcription on Windows.
 
-Windows x64 package that embeds the OpenAI Whisper tiny English model inside a single native DLL, accelerated by ONNX Runtime with DirectML. Supports the Unity Editor and Windows Standalone 64-bit builds. Setup is turnkey and fully offline: no downloads, no updates—unpack the DLL, open the example scenes directly from the package, and choose your audio source (clip or microphone) for transcription or dictation.
+ONNX Runtime is a high-performance inference engine for ONNX models; this package uses it to run the Whisper model efficiently on Windows.
+
+DirectML is a Windows machine-learning acceleration API that runs on DirectX 12-capable GPUs and can fall back to CPU when needed.
+
+This is a Windows x64 package that embeds the OpenAI Whisper tiny English model inside a single native DLL, accelerated by ONNX Runtime with DirectML. Supports the Unity Editor and Windows Standalone 64-bit builds. Setup is turnkey and fully offline: no downloads, no updates—unpack the DLL, open the example scenes directly from the package, and choose your audio source (clip or microphone) for transcription or dictation.
 
 ## Platforms
 - **Supported:** Windows 64-bit — Unity Editor and Windows Standalone player builds.
