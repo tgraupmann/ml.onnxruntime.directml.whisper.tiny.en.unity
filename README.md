@@ -50,8 +50,10 @@ Windows x64 package that embeds the OpenAI Whisper tiny English model inside a s
 ## Licensing
 - This package is licensed under the **Unity Asset Store Terms of Service and EULA** (see <https://unity.com/legal/as-terms> and the license overview at <https://support.unity.com/hc/en-us/articles/208601846-Asset-Store-licenses-Extension-Assets-Single-and-Multi-Entity-assets>).
 - This asset is intended to be treated as an **Extension Asset**; per Unity’s terms, you must purchase one seat per user who has access to the raw asset files.
-- Third-party components: **DirectML** (MIT, <https://github.com/microsoft/DirectML/blob/master/LICENSE>) and **ONNX Runtime** (MIT, <https://github.com/microsoft/onnxruntime/blob/main/LICENSE>).
- - Third-party components: **DirectML** (MIT, <https://github.com/microsoft/DirectML/blob/master/LICENSE>), **ONNX Runtime** (MIT, <https://github.com/microsoft/onnxruntime/blob/main/LICENSE>), and **OpenAI Whisper** (MIT, <https://github.com/openai/whisper/blob/main/LICENSE>).
+- Third-party components:
+	- **DirectML** (MIT, <https://github.com/microsoft/DirectML/blob/master/LICENSE>)
+	- **ONNX Runtime** (MIT, <https://github.com/microsoft/onnxruntime/blob/main/LICENSE>)
+	- **OpenAI Whisper** (MIT, <https://github.com/openai/whisper/blob/main/LICENSE>)
 
 ## Troubleshooting
 - Missing TMPro types: ensure your asmdef references `Unity.TextMeshPro` (and `UnityEngine.UI` for UGUI).
