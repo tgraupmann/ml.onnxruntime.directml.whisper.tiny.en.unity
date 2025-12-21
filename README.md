@@ -1,5 +1,7 @@
 # Whisper Tiny EN (DirectML) Unity Package
 
+OpenAI Whisper is an automatic speech recognition (ASR) model trained on diverse multilingual audio; it transcribes speech to text and can auto-detect language. This package bundles the tiny English variant for lightweight, offline transcription on Windows.
+
 Windows x64 package that embeds the OpenAI Whisper tiny English model inside a single native DLL, accelerated by ONNX Runtime with DirectML. Supports the Unity Editor and Windows Standalone 64-bit builds. Setup is turnkey and fully offline: no downloads, no updates—unpack the DLL, open the example scenes directly from the package, and choose your audio source (clip or microphone) for transcription or dictation.
 
 ## Platforms
