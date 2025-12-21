@@ -1,4 +1,4 @@
-# Whisper Tiny EN (DirectML) Unity Package
+# Whisper Tiny EN (DirectML) for Unity
 
 OpenAI Whisper is an automatic speech recognition (ASR) model trained on diverse multilingual audio; it transcribes speech to text and can auto-detect language. This package bundles the tiny English variant for lightweight, offline transcription on Windows.
 
