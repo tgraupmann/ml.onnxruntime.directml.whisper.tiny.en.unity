@@ -2,7 +2,7 @@
 
 https://assetstore.unity.com/packages/slug/351516
 
-OpenAI Whisper is an automatic speech recognition (ASR) model trained on diverse multilingual audio; it transcribes speech to text and can auto-detect language. This package bundles the tiny English variant for lightweight, offline transcription on Windows.
+OpenAI Whisper is an automatic speech recognition (ASR) model trained on diverse audio; it transcribes speech to text for English. This package bundles the tiny English variant for lightweight, offline transcription on Windows.
 
 ONNX Runtime is a high-performance inference engine for ONNX models; this package uses it to run the Whisper model efficiently on Windows.
 
@@ -29,7 +29,7 @@ This is a Windows x64 package that embeds the OpenAI Whisper tiny English model 
 - **C# samples**: microphone and clip transcription workflows.
 
 ## Quick setup
-1) **Unpack the DLL:** `Assets → WhisperTinyEn → Unpack WhisperTinyEn DLLs` (combines the split archive into a single native DLL in `Plugins/Windows/x64`).
+1) **Unpack the DLL:** `Assets → WhisperTinyEn → Unpack WhisperTinyEn DLLs` (combines the split archive into a single native DLL in `Plugins/Windows/x64`). The native DLL is shipped split so each file stays under common version-control size limits (often ~100 MB). If your repo enforces that limit, you can add the unpacked DLL to `.gitignore` and rerun **Unpack WhisperTinyEn DLLs** after pulling or on machines that need to rebuild the extracted binary.
 2) **Unpack test audio:** `Assets → WhisperTinyEn → Unpack WhisperTinyEn Example Audio` also drops the sample `WhisperTest.wav` into `Assets/StreamingAssets/Audio` for the clip-based example.
 3) **Open an example scene (no import needed):** open directly from the package (or copy to your project if you prefer) and press Play in the Editor. Everything runs offline; no extra downloads are required.
 
@@ -90,6 +90,36 @@ That’s it: create the client, pass PCM (mono, 16 kHz floats), detect language,
 - `Decode(float[] pcmMono16k)`
 	- Input: mono 16 kHz PCM samples (`float[]`), values typically in [-1, 1].
 	- Output: transcript string; empty string on unsupported platforms or load failure.
+	- Notes:
+		- If an in-flight decode is cancelled via `Abort()`, `Decode` returns an empty string.
+
+### Progress
+- `DllWhisperTinyEn.SetProgress(DllWhisperTinyEn.ProgressCallback callback)`
+	- Registers a native progress callback.
+	- Callback signature: `void (int stage, int current, int total, string partialText)`
+		- `stage`: 0..2 (preprocess / encode / decode)
+		- `current` / `total`: stage-local counters
+		- `partialText`: partial transcript (may be empty)
+	- Threading: the callback may be invoked from a native/background thread. Do not touch Unity objects from the callback; copy values into fields and update UI on the main thread.
+- `DllWhisperTinyEn.ClearProgress()`
+	- Clears the registered progress callback.
+
+To compute an overall “total percent” across 3 stages:
+
+```csharp
+static int TotalPercent(int stage, int current, int total)
+{
+    const int stages = 3;
+	double stageNormalized = (total > 0) ? Math.Clamp((double)current / total, 0.0, 1.0) : 0.0;
+	double totalNormalized = (Math.Clamp(stage, 0, stages - 1) + stageNormalized) / stages;
+	return (int)Math.Round(totalNormalized * 100.0);
+}
+```
+
+### Cancellation
+- `DllWhisperTinyEn.Abort()`
+	- Requests cooperative cancellation of the currently-running native operation (for example, an in-flight `Decode`).
+	- This is a global/native cancellation flag; it is not tied to a specific `DllWhisperTinyEn` instance.
 
 ## Getting PCM data
 
