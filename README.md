@@ -40,7 +40,6 @@ This is a Windows x64 package that embeds the OpenAI Whisper tiny English model 
 	- **Push-to-talk:** hold a button to capture, release to send.
 
 ## Example features
-- Language detection + transcription from PCM (16 kHz mono floats).
 - Rolling transcript buffer with max length guard.
 - UI hooks via TextMeshPro; dropdowns to pick audio source/device (input only; loopback not implemented in this sample).
 
@@ -49,7 +48,7 @@ This is a Windows x64 package that embeds the OpenAI Whisper tiny English model 
 - Keep Plugins and StreamingAssets in place; the model DLL must remain alongside the plugin binaries.
 - Works offline; no model downloads or updates required.
 - Works in Editor and Windows Standalone 64-bit builds (x64 only).
-- On unsupported platforms, `DetectLanguage` and `Decode` return an empty string.
+- On unsupported platforms, `Decode` return an empty string.
 
 ## Tech stack
 - **Model:** OpenAI Whisper (tiny.en) converted to ONNX. See [available models](https://github.com/openai/whisper/tree/main?tab=readme-ov-file#available-models-and-languages).
@@ -74,19 +73,15 @@ This is a Windows x64 package that embeds the OpenAI Whisper tiny English model 
 var whisperTinyEn = new DllWhisperTinyEn();          // create the client (loads the native DLL/model)
 
 // pcm: float[] mono, 16 kHz samples
-var language = whisperTinyEn.DetectLanguage(pcm);    // detect language
 var transcript = whisperTinyEn.Decode(pcm);          // decode transcript
 ```
 
-That’s it: create the client, pass PCM (mono, 16 kHz floats), detect language, and decode.
+That’s it: create the client, pass PCM (mono, 16 kHz floats), and decode.
 
 ## API
 - `DllWhisperTinyEn()`
 	- Input: none; creates the client and loads the native DLL/model (may throw if binaries are missing).
 	- Output: client instance; inference methods will return empty strings on unsupported platforms.
-- `DetectLanguage(float[] pcmMono16k)`
-	- Input: mono 16 kHz PCM samples (`float[]`), values typically in [-1, 1].
-	- Output: language code string (for example, `"en"`); empty string on unsupported platforms or load failure.
 - `Decode(float[] pcmMono16k)`
 	- Input: mono 16 kHz PCM samples (`float[]`), values typically in [-1, 1].
 	- Output: transcript string; empty string on unsupported platforms or load failure.
