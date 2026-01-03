@@ -23,7 +23,7 @@ This is a Windows x64 package that embeds the OpenAI Whisper tiny English model 
 
 ## Package contents
 - **Plugins/Windows/x64**: native DirectML/ONNXRuntime DLL with the embedded Whisper tiny EN model (unpacked via menu).
-- **Resources/Examples**: example scenes that can be opened directly from the package or copied into your project.
+- **Tests/Runtime/Scenes**: example scenes that can be opened directly from the package or copied into your project.
 - **StreamingAssets/Audio**: sample `WhisperTest.wav` for clip-based transcription (unpacked via menu).
 - **Editor scripts**: menu items to unpack DLLs, test audio, and examples.
 - **C# samples**: microphone and clip transcription workflows.
@@ -40,18 +40,21 @@ This is a Windows x64 package that embeds the OpenAI Whisper tiny English model 
 	- **Push-to-talk:** hold a button to capture, release to send.
 
 ## Example features
+- English transcription from PCM (16 kHz mono floats).
 - Rolling transcript buffer with max length guard.
 - UI hooks via TextMeshPro; dropdowns to pick audio source/device (input only; loopback not implemented in this sample).
+- Live progress percent + partial transcript updates during decoding.
 
 ## Notes
 - Prefers a DX12-capable GPU/driver for DirectML acceleration; will fall back to CPU if GPU isn’t available.
 - Keep Plugins and StreamingAssets in place; the model DLL must remain alongside the plugin binaries.
 - Works offline; no model downloads or updates required.
 - Works in Editor and Windows Standalone 64-bit builds (x64 only).
-- On unsupported platforms, `Decode` return an empty string.
+- On unsupported platforms, `GetVersion`, `DetectLanguage`, and `Decode` return an empty string.
+- Long clips (> ~30s) are processed in multiple overlapping windows and stitched into a single transcript.
 
 ## Tech stack
-- **Model:** OpenAI Whisper (tiny.en) converted to ONNX. See [available models](https://github.com/openai/whisper/tree/main?tab=readme-ov-file#available-models-and-languages).
+- **Model:** OpenAI Whisper (tiny.en) converted to ONNX.  See [available models](https://github.com/openai/whisper/tree/main?tab=readme-ov-file#available-models-and-languages).
 - **Runtime:** ONNX Runtime with DirectML execution provider (Windows x64).
 - **Unity:** TextMeshPro + UGUI for UI bindings; Unity `Microphone` API for input.
 
@@ -72,6 +75,8 @@ This is a Windows x64 package that embeds the OpenAI Whisper tiny English model 
 ```csharp
 var whisperTinyEn = new DllWhisperTinyEn();          // create the client (loads the native DLL/model)
 
+var version = whisperTinyEn.GetVersion();            // optional: native DLL version string
+
 // pcm: float[] mono, 16 kHz samples
 var transcript = whisperTinyEn.Decode(pcm);          // decode transcript
 ```
@@ -82,24 +87,36 @@ That’s it: create the client, pass PCM (mono, 16 kHz floats), and decode.
 - `DllWhisperTinyEn()`
 	- Input: none; creates the client and loads the native DLL/model (may throw if binaries are missing).
 	- Output: client instance; inference methods will return empty strings on unsupported platforms.
+- `GetVersion()`
+	- Output: native DLL version string (for example, "1.2.3"); empty string on unsupported platforms.
+- `DetectLanguage(float[] pcmMono16k)`
+	- Input: mono 16 kHz PCM samples (`float[]`), values typically in [-1, 1].
+	- Output: language code string (for example, `"en"`); empty string on unsupported platforms or load failure.
+	- Notes:
+		- This package is Whisper **tiny.en** (English-only). `DetectLanguage(...)` is provided for API parity and typically returns `"en"`.
 - `Decode(float[] pcmMono16k)`
 	- Input: mono 16 kHz PCM samples (`float[]`), values typically in [-1, 1].
 	- Output: transcript string; empty string on unsupported platforms or load failure.
 	- Notes:
+		- Long clips are decoded in multiple overlapping windows and stitched into a single transcript.
 		- If an in-flight decode is cancelled via `Abort()`, `Decode` returns an empty string.
 
 ### Progress
 - `DllWhisperTinyEn.SetProgress(DllWhisperTinyEn.ProgressCallback callback)`
 	- Registers a native progress callback.
 	- Callback signature: `void (int stage, int current, int total, string partialText)`
-		- `stage`: 0..2 (preprocess / encode / decode)
+		- `stage`: 0..3
+			- 0: preprocess / segment-level progress (for long clips)
+			- 1: encoder
+			- 2: decoder
+			- 3: done
 		- `current` / `total`: stage-local counters
-		- `partialText`: partial transcript (may be empty)
+		- `partialText`: partial transcript (may be empty). Most useful during stage 2.
 	- Threading: the callback may be invoked from a native/background thread. Do not touch Unity objects from the callback; copy values into fields and update UI on the main thread.
 - `DllWhisperTinyEn.ClearProgress()`
 	- Clears the registered progress callback.
 
-To compute an overall “total percent” across 3 stages:
+To compute a simple overall “total percent” across 3 running stages (0..2):
 
 ```csharp
 static int TotalPercent(int stage, int current, int total)
@@ -109,6 +126,12 @@ static int TotalPercent(int stage, int current, int total)
 	double totalNormalized = (Math.Clamp(stage, 0, stages - 1) + stageNormalized) / stages;
 	return (int)Math.Round(totalNormalized * 100.0);
 }
+```
+
+If you want smoother progress for long clips (multi-window decode), treat stage 0 `current/total` as `(segmentIndex/segmentCount)` and compute:
+
+```csharp
+// total = (segmentIndex*100 + withinSegment) / segmentCount
 ```
 
 ### Cancellation
@@ -145,10 +168,10 @@ Guidelines:
 
 ## Examples
 
-* WhisperExampleAudioClip: Translate an audio clip to text.
+* WhisperExampleAudioClip: Transcribe an audio clip to text.
 
 ![Example 1](images/image_1.png)
 
-* WhisperExampleMicrophone: Translate an audio source to text.
+* WhisperExampleMicrophone: Transcribe a microphone/audio source to text.
 
 ![Example 2](images/image_2.png)
